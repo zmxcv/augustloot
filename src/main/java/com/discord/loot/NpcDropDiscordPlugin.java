@@ -11,13 +11,14 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
-import net.runelite.client.util.ImageUtil;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.TrayIcon.MessageType;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -58,16 +59,14 @@ public class NpcDropDiscordPlugin extends Plugin {
         System.out.println("Discord Loot Notifier stopped!");
     }
 
-    private void loadTrayIcon() {
-        try {
-            BufferedImage trayIconImage = ImageUtil.loadImageResource(getClass(), "icon.png");
-            if (trayIconImage == null) {
-                System.out.println("Tray icon resource not found!");
-                trayIconImage = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+
+    private void loadTrayIcon() throws IOException {
+        // Leading '/' = absolute path from resources root
+        try (InputStream is = getClass().getResourceAsStream("/icon.png")) {
+            if (is == null) {
+                throw new IllegalStateException("icon.png not found in resources!");
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            trayIconImage = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+            trayIconImage = ImageIO.read(is);
         }
     }
 
