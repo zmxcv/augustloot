@@ -59,7 +59,7 @@ public class NpcDropDiscordPlugin extends Plugin {
 
     private void loadTrayIcon() {
         try {
-            trayIconImage = ImageIO.read(getClass().getResourceAsStream("/net/runelite/client/plugins/discordloot/icon.png"));
+            trayIconImage = ImageIO.read(getClass().getResourceAsStream("icon.png"));
             if (trayIconImage == null) {
                 System.out.println("Tray icon resource not found!");
                 trayIconImage = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
