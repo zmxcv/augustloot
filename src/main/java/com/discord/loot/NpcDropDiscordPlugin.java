@@ -1,4 +1,4 @@
-package com.example;
+package com.discord.loot;
 
 import com.google.inject.Inject;
 import net.runelite.api.ChatMessageType;
@@ -23,7 +23,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 @PluginDescriptor(
-        name = "[PvM] Discord Loot Notifier",
+        name = "Discord Loot Notifier",
         description = "Send loot information to Discord, PM, tray, and sound."
 )
 public class NpcDropDiscordPlugin extends Plugin {
