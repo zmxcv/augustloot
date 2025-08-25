@@ -23,7 +23,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 @PluginDescriptor(
-        name = "Discord Loot Notifier",
+        name = "August Extended Loot Notifications",
         description = "Send loot information to Discord, PM, tray, and sound."
 )
 public class NpcDropDiscordPlugin extends Plugin {
@@ -145,7 +145,7 @@ public class NpcDropDiscordPlugin extends Plugin {
     private void sendPrivateMessage(String itemName, int quantity) {
         client.addChatMessage(
                 ChatMessageType.PRIVATECHAT,
-                "<img=1> Loot Tracker",
+                "<img=46> Loot",
                 "You received " + quantity + "x " + itemName + "!",
                 null
         );

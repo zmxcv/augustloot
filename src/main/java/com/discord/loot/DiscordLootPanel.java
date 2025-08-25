@@ -1,4 +1,4 @@
-package com.example;
+package com.discord.loot;
 
 import net.runelite.client.ui.PluginPanel;
 
@@ -47,7 +47,8 @@ public class DiscordLootPanel extends PluginPanel {
         pmCheckBox = new JCheckBox("Private Message", true);
         trayCheckBox = new JCheckBox("Tray Notification", true);
         soundCheckBox = new JCheckBox("Play Sound", true);
-        fortuneCheckBox = new JCheckBox("Fortune Keywords", true);
+        fortuneCheckBox = new JCheckBox("Fortune", true);
+        fortuneCheckBox.setToolTipText("If your account has Fortune league perk, enable this for notification of any boxes");
         optionsPanel.add(discordCheckBox);
         optionsPanel.add(pmCheckBox);
         optionsPanel.add(trayCheckBox);
