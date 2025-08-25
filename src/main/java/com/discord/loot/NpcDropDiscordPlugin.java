@@ -11,6 +11,7 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
+import net.runelite.client.util.ImageUtil;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -59,7 +60,7 @@ public class NpcDropDiscordPlugin extends Plugin {
 
     private void loadTrayIcon() {
         try {
-            trayIconImage = ImageIO.read(getClass().getResourceAsStream("src/main/resources/icon.png"));
+            BufferedImage trayIconImage = ImageUtil.loadImageResource(getClass(), "icon.png");
             if (trayIconImage == null) {
                 System.out.println("Tray icon resource not found!");
                 trayIconImage = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
