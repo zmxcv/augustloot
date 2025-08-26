@@ -56,8 +56,7 @@ public class NpcDropDiscordPlugin extends Plugin {
     @Override
     protected void startUp() throws Exception {
         panel = new DiscordLootPanel();
-        loadTrayIcon();
-        setupNavigationButton();
+        setupNavigationButton("/icon.png");
         System.out.println("Discord Loot Notifier started!");
     }
 
@@ -96,16 +95,6 @@ public class NpcDropDiscordPlugin extends Plugin {
             }
             trayIconImage = ImageIO.read(is);
         }
-    }
-
-    private void setupNavigationButton() {
-        navButton = NavigationButton.builder()
-                .tooltip("Discord Loot Notifier")
-                .icon(trayIconImage != null ? trayIconImage : new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB))
-                .priority(1)
-                .panel(panel)
-                .build();
-        clientToolbar.addNavigation(navButton);
     }
 
     @Subscribe
@@ -270,6 +259,42 @@ public class NpcDropDiscordPlugin extends Plugin {
                 e.printStackTrace();
             }
         });
+    }
+
+    private void setupNavigationButton(String resourcePath)
+    {
+        BufferedImage icon;
+        try
+        {
+            icon = ImageIO.read(getClass().getResourceAsStream(resourcePath));
+            if (icon == null)
+            {
+                System.err.println("Tray icon resource not found, using placeholder.");
+                icon = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            icon = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+        }
+
+        try
+        {
+            navButton = NavigationButton.builder()
+                    .tooltip("Discord Loot Notifier")
+                    .icon(icon)
+                    .priority(1)
+                    .panel(panel)
+                    .build();
+
+            clientToolbar.addNavigation(navButton);
+        }
+        catch (Exception e)
+        {
+            System.err.println("Failed to add navigation button, plugin will still load.");
+            e.printStackTrace();
+        }
     }
 
 }
