@@ -15,6 +15,7 @@ public class DiscordLootPanel extends PluginPanel {
     private final JCheckBox pmCheckBox;
     private final JCheckBox trayCheckBox;
     private final JCheckBox soundCheckBox;
+    private final JCheckBox petCheckBox;
     private final JCheckBox fortuneCheckBox;
     private final JButton testButton;
     private final JButton addDropButton;
@@ -47,12 +48,15 @@ public class DiscordLootPanel extends PluginPanel {
         pmCheckBox = new JCheckBox("Private Message", true);
         trayCheckBox = new JCheckBox("Tray Notification", true);
         soundCheckBox = new JCheckBox("Play Sound", true);
+        petCheckBox = new JCheckBox("Pet Notifications", true);
+        petCheckBox.setToolTipText("Enable notifications when a pet drops.");
         fortuneCheckBox = new JCheckBox("Fortune", true);
         fortuneCheckBox.setToolTipText("If your account has Fortune league perk, enable this for notification of any boxes");
         optionsPanel.add(discordCheckBox);
         optionsPanel.add(pmCheckBox);
         optionsPanel.add(trayCheckBox);
         optionsPanel.add(soundCheckBox);
+        optionsPanel.add(petCheckBox);
         optionsPanel.add(fortuneCheckBox);
         optionsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 150));
         add(optionsPanel);
@@ -117,6 +121,16 @@ public class DiscordLootPanel extends PluginPanel {
         });
     }
 
+    public void addLootFeedForPet(String gameMessage) {
+        String entry = gameMessage;
+        SwingUtilities.invokeLater(() -> {
+            lootListModel.addElement(entry);
+            int lastIndex = lootListModel.getSize() - 1;
+            if (lastIndex >= 0)
+                lootList.ensureIndexIsVisible(lastIndex);
+        });
+    }
+
     private void sendTestNotification() {
         if (discordCheckBox.isSelected()) {
             System.out.println("Discord test notification to: " + webhookField.getText());
@@ -161,6 +175,8 @@ public class DiscordLootPanel extends PluginPanel {
     public boolean isFortuneEnabled() {
         return fortuneCheckBox.isSelected();
     }
+
+    public boolean isPetsEnabled() { return petCheckBox.isSelected(); }
 
     public List<String> getPriorityDrops() {
         return new ArrayList<>(priorityDrops);
