@@ -10,6 +10,7 @@ import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.NpcLootReceived;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.plugins.loottracker.LootReceived;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 
@@ -98,9 +99,8 @@ public class NpcDropDiscordPlugin extends Plugin {
     }
 
     @Subscribe
-    public void onNpcLootReceived(NpcLootReceived event) {
-        NPC npc = event.getNpc();
-        String npcName = npc.getName();
+    public void onLootReceived(LootReceived event) {
+        String npcName = event.getName();
         String playerName = client.getLocalPlayer().getName();
         event.getItems().forEach(itemStack -> {
             String itemName = client.getItemDefinition(itemStack.getId()).getName();
