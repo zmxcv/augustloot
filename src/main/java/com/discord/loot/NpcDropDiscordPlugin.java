@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 @PluginDescriptor(
         name = "August Extended Loot Notifications",
@@ -49,6 +51,9 @@ public class NpcDropDiscordPlugin extends Plugin {
     private NavigationButton navButton;
     private static BufferedImage trayIconImage;
 
+    private static final BlockingQueue<String> notifQueue = new LinkedBlockingQueue<>();
+    private static volatile boolean workerRunning = false;
+
     private static final Set<String> PET_MESSAGES = Set.of(
             "You have a funny feeling like you're being followed",
             "You feel something weird sneaking into your backpack",
@@ -58,6 +63,7 @@ public class NpcDropDiscordPlugin extends Plugin {
     @Override
     protected void startUp() throws Exception {
         panel = new DiscordLootPanel();
+
         panel.loadSettings();       // Explicitly load settings from JSON
         panel.applySettingsToUI();  // Apply loaded settings to checkboxes, webhook, and priority list
 
@@ -91,21 +97,9 @@ public class NpcDropDiscordPlugin extends Plugin {
             clientThread.invokeLater(() -> {
                 if (panel.isDiscordEnabled()) sendDiscordNotificationForPet(chatMessage);
                 if (panel.isPmEnabled()) sendPrivateMessageForPet(chatMessage);
-                if (panel.isTrayEnabled()) showTrayNotificationForPet(chatMessage);
                 if (panel.isSoundEnabled()) panel.playSound();
                 panel.addLootFeedForPet(chatMessage);
             });
-        }
-    }
-
-
-    private void loadTrayIcon() throws IOException {
-        // Leading '/' = absolute path from resources root
-        try (InputStream is = getClass().getResourceAsStream("/icon.png")) {
-            if (is == null) {
-                throw new IllegalStateException("icon.png not found in resources!");
-            }
-            trayIconImage = ImageIO.read(is);
         }
     }
 
@@ -183,26 +177,52 @@ public class NpcDropDiscordPlugin extends Plugin {
     }
 
     public static void showTrayNotification(String itemName, int quantity) {
-        SwingUtilities.invokeLater(() -> {
-            if (!SystemTray.isSupported()) return;
-            try {
-                SystemTray tray = SystemTray.getSystemTray();
-                TrayIcon icon = new TrayIcon(trayIconImage != null ? trayIconImage : new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB), "Loot Tracker");
-                icon.setImageAutoSize(true);
-                tray.add(icon);
-                icon.displayMessage("Loot Tracker", "You received " + quantity + "x " + itemName + "!", MessageType.INFO);
+        notifQueue.offer(quantity + "x " + itemName);
+        startWorker();
+    }
 
-                new Thread(() -> {
-                    try {
-                        Thread.sleep(3000);
-                        tray.remove(icon);
-                    } catch (Exception ignored) {
-                    }
-                }).start();
+    private static synchronized void startWorker() {
+        if (workerRunning) return;
+        workerRunning = true;
+
+        new Thread(() -> {
+            try {
+                while (!notifQueue.isEmpty()) {
+                    String message = notifQueue.take();
+
+                    SwingUtilities.invokeAndWait(() -> {
+                        if (!SystemTray.isSupported()) return;
+                        try {
+                            SystemTray tray = SystemTray.getSystemTray();
+                            TrayIcon icon = new TrayIcon(
+                                    trayIconImage != null ? trayIconImage :
+                                            new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB),
+                                    "Loot Tracker"
+                            );
+                            icon.setImageAutoSize(true);
+                            tray.add(icon);
+                            icon.displayMessage("Loot Tracker", "You received " + message + "!", TrayIcon.MessageType.INFO);
+
+                            new Thread(() -> {
+                                try {
+                                    Thread.sleep(3000);
+                                    tray.remove(icon);
+                                } catch (Exception ignored) {}
+                            }).start();
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    });
+
+                    Thread.sleep(3500); // wait for this one to finish before next
+                }
             } catch (Exception e) {
                 e.printStackTrace();
+            } finally {
+                workerRunning = false;
             }
-        });
+        }, "TrayNotificationWorker").start();
     }
 
     private static String escapeJson(String str) {
@@ -250,29 +270,6 @@ public class NpcDropDiscordPlugin extends Plugin {
                 chatMessage,
                 null
         );
-    }
-
-    public static void showTrayNotificationForPet(String chatMessage) {
-        SwingUtilities.invokeLater(() -> {
-            if (!SystemTray.isSupported()) return;
-            try {
-                SystemTray tray = SystemTray.getSystemTray();
-                TrayIcon icon = new TrayIcon(trayIconImage != null ? trayIconImage : new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB), "Loot Tracker");
-                icon.setImageAutoSize(true);
-                tray.add(icon);
-                icon.displayMessage("Loot Tracker", chatMessage, MessageType.INFO);
-
-                new Thread(() -> {
-                    try {
-                        Thread.sleep(3000);
-                        tray.remove(icon);
-                    } catch (Exception ignored) {
-                    }
-                }).start();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
     }
 
     private void setupNavigationButton(String resourcePath)
