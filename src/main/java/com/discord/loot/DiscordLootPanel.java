@@ -43,6 +43,8 @@ public class DiscordLootPanel extends PluginPanel {
     public DiscordLootPanel() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
+        // Webhook Panel
         JPanel webhookPanel = new JPanel(new BorderLayout());
         webhookPanel.setBorder(BorderFactory.createTitledBorder("Discord Webhook"));
         webhookField = new JTextField();
@@ -50,13 +52,28 @@ public class DiscordLootPanel extends PluginPanel {
         webhookPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
         add(webhookPanel);
         add(Box.createVerticalStrut(5));
-        JPanel testButtonPanel = new JPanel(new BorderLayout());
+
+        // Test & Clear Notification Buttons Panel (Vertical, Centered)
+        JPanel testButtonPanel = new JPanel();
+        testButtonPanel.setLayout(new BoxLayout(testButtonPanel, BoxLayout.Y_AXIS));
+        testButtonPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
         testButton = new JButton("Send Test Notification");
+        testButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         testButton.addActionListener(e -> sendTestNotification());
-        testButtonPanel.add(testButton, BorderLayout.WEST); // left align
-        testButtonPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        testButtonPanel.add(testButton);
+        testButtonPanel.add(Box.createVerticalStrut(5));
+
+        JButton clearNotificationsButton = new JButton("Clear Notifications");
+        clearNotificationsButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        clearNotificationsButton.addActionListener(e -> NpcDropDiscordPlugin.clearNotificationQueue());
+        testButtonPanel.add(clearNotificationsButton);
+
+        testButtonPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
         add(testButtonPanel);
         add(Box.createVerticalStrut(10));
+
+        // Options Panel
         JPanel optionsPanel = new JPanel(new GridLayout(0, 1, 5, 5));
         optionsPanel.setBorder(BorderFactory.createTitledBorder("Notifications / Settings"));
         discordCheckBox = new JCheckBox("Discord Notification", true);
@@ -79,17 +96,21 @@ public class DiscordLootPanel extends PluginPanel {
         optionsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 150));
         add(optionsPanel);
         add(Box.createVerticalStrut(10));
+
+        // Priority Drops Panel
         JPanel priorityPanel = new JPanel(new BorderLayout(5, 5));
         priorityPanel.setBorder(BorderFactory.createTitledBorder("Priority Drops"));
         priorityListModel = new DefaultListModel<>();
         JList<String> priorityList = new JList<>(priorityListModel);
         priorityPanel.add(new JScrollPane(priorityList), BorderLayout.CENTER);
+
         JPanel editPanel = new JPanel();
         editPanel.setLayout(new BoxLayout(editPanel, BoxLayout.Y_AXIS));
         newDropField = new JTextField();
         newDropField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 25));
         editPanel.add(newDropField);
         editPanel.add(Box.createVerticalStrut(5));
+
         JPanel buttons = new JPanel(new GridLayout(1, 2, 5, 0));
         addDropButton = new JButton("Add");
         removeDropButton = new JButton("Remove");
@@ -97,11 +118,14 @@ public class DiscordLootPanel extends PluginPanel {
         buttons.add(removeDropButton);
         editPanel.add(buttons);
         priorityPanel.add(editPanel, BorderLayout.SOUTH);
+
         addDropButton.addActionListener(e -> addPriorityDrop());
         removeDropButton.addActionListener(e -> removeSelectedDrop(priorityList));
         priorityPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 200));
         add(priorityPanel);
         add(Box.createVerticalStrut(10));
+
+        // Loot Feed Panel
         JPanel lootPanel = new JPanel(new BorderLayout());
         lootPanel.setBorder(BorderFactory.createTitledBorder("Loot Feed"));
         lootListModel = new DefaultListModel<>();
@@ -130,28 +154,20 @@ public class DiscordLootPanel extends PluginPanel {
     }
 
     public void addLootFeed(String itemName, String npcName) {
-        // Get current local time in HH:MM:SS
         String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
         String entry = "[" + time + "] " + itemName + " from " + npcName;
-
         SwingUtilities.invokeLater(() -> {
             lootListModel.addElement(entry);
-            int lastIndex = lootListModel.getSize() - 1;
-            if (lastIndex >= 0)
-                lootList.ensureIndexIsVisible(lastIndex);
+            lootList.ensureIndexIsVisible(lootListModel.getSize() - 1);
         });
     }
 
     public void addLootFeedForPet(String gameMessage) {
-        // Get current local time in HH:MM:SS
         String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
         String entry = "[" + time + "] " + gameMessage;
-
         SwingUtilities.invokeLater(() -> {
             lootListModel.addElement(entry);
-            int lastIndex = lootListModel.getSize() - 1;
-            if (lastIndex >= 0)
-                lootList.ensureIndexIsVisible(lastIndex);
+            lootList.ensureIndexIsVisible(lootListModel.getSize() - 1);
         });
     }
 
@@ -172,8 +188,6 @@ public class DiscordLootPanel extends PluginPanel {
         addLootFeed("TestItem", "TestNPC");
     }
 
-
-    // Save current settings to JSON
     public void saveSettings() {
         updateSettingsFromUI();
         try (Writer writer = Files.newBufferedWriter(settingsFile)) {
@@ -183,7 +197,6 @@ public class DiscordLootPanel extends PluginPanel {
         }
     }
 
-    // Load settings from JSON
     public void loadSettings() {
         if (Files.exists(settingsFile)) {
             try (Reader reader = Files.newBufferedReader(settingsFile)) {
@@ -197,7 +210,6 @@ public class DiscordLootPanel extends PluginPanel {
         }
     }
 
-    // Apply loaded settings to UI elements
     void applySettingsToUI() {
         webhookField.setText(settings.webhookUrl);
         discordCheckBox.setSelected(settings.discordEnabled);
@@ -215,7 +227,6 @@ public class DiscordLootPanel extends PluginPanel {
         }
     }
 
-    // Update settings object from UI
     private void updateSettingsFromUI() {
         settings.webhookUrl = webhookField.getText();
         settings.discordEnabled = discordCheckBox.isSelected();
