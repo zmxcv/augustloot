@@ -7,6 +7,7 @@ import net.runelite.api.NPC;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.ClientShutdown;
 import net.runelite.client.events.NpcLootReceived;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
@@ -72,6 +73,12 @@ public class NpcDropDiscordPlugin extends Plugin {
         }
         panel.saveSettings();
         System.out.println("Discord Loot Notifier stopped!");
+    }
+
+    @Subscribe
+    public void onClientShutdown(ClientShutdown e) {
+        panel.saveSettings();
+        System.out.println("Settings saved on client shutdown");
     }
 
     @Subscribe
