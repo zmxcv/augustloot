@@ -1,13 +1,23 @@
 package com.discord.loot;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import net.runelite.client.ui.PluginPanel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DiscordLootPanel extends PluginPanel {
+
     private final JTextField webhookField;
     private final DefaultListModel<String> priorityListModel;
     private final DefaultListModel<String> lootListModel;
@@ -25,6 +35,10 @@ public class DiscordLootPanel extends PluginPanel {
 
     private final List<String> priorityDrops = new ArrayList<>();
     private final JList<String> lootList;
+
+    private final Path settingsFile = Path.of(System.getProperty("user.home"), ".augustrsps", "plugins",  "discord_loot_settings.json");
+    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private DiscordLootSettings settings;
 
     public DiscordLootPanel() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -116,7 +130,10 @@ public class DiscordLootPanel extends PluginPanel {
     }
 
     public void addLootFeed(String itemName, String npcName) {
-        String entry = itemName + " from " + npcName;
+        // Get current local time in HH:MM:SS
+        String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+        String entry = "[" + time + "] " + itemName + " from " + npcName;
+
         SwingUtilities.invokeLater(() -> {
             lootListModel.addElement(entry);
             int lastIndex = lootListModel.getSize() - 1;
@@ -126,7 +143,10 @@ public class DiscordLootPanel extends PluginPanel {
     }
 
     public void addLootFeedForPet(String gameMessage) {
-        String entry = gameMessage;
+        // Get current local time in HH:MM:SS
+        String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+        String entry = "[" + time + "] " + gameMessage;
+
         SwingUtilities.invokeLater(() -> {
             lootListModel.addElement(entry);
             int lastIndex = lootListModel.getSize() - 1;
@@ -149,12 +169,69 @@ public class DiscordLootPanel extends PluginPanel {
 
         if (soundCheckBox.isSelected())
             Toolkit.getDefaultToolkit().beep();
+        addLootFeed("TestItem", "TestNPC");
+    }
+
+
+    // Save current settings to JSON
+    public void saveSettings() {
+        updateSettingsFromUI();
+        try (Writer writer = Files.newBufferedWriter(settingsFile)) {
+            gson.toJson(settings, writer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Load settings from JSON
+    public void loadSettings() {
+        if (Files.exists(settingsFile)) {
+            try (Reader reader = Files.newBufferedReader(settingsFile)) {
+                settings = gson.fromJson(reader, DiscordLootSettings.class);
+            } catch (IOException e) {
+                e.printStackTrace();
+                settings = new DiscordLootSettings();
+            }
+        } else {
+            settings = new DiscordLootSettings();
+        }
+    }
+
+    // Apply loaded settings to UI elements
+    void applySettingsToUI() {
+        webhookField.setText(settings.webhookUrl);
+        discordCheckBox.setSelected(settings.discordEnabled);
+        pmCheckBox.setSelected(settings.pmEnabled);
+        trayCheckBox.setSelected(settings.trayEnabled);
+        soundCheckBox.setSelected(settings.soundEnabled);
+        petCheckBox.setSelected(settings.petsEnabled);
+        fortuneCheckBox.setSelected(settings.fortuneEnabled);
+        slayerCheckBox.setSelected(settings.slayerEnabled);
+
+        priorityListModel.clear();
+        for (String drop : settings.priorityDrops) {
+            priorityListModel.addElement(drop);
+            priorityDrops.add(drop.toLowerCase());
+        }
+    }
+
+    // Update settings object from UI
+    private void updateSettingsFromUI() {
+        settings.webhookUrl = webhookField.getText();
+        settings.discordEnabled = discordCheckBox.isSelected();
+        settings.pmEnabled = pmCheckBox.isSelected();
+        settings.trayEnabled = trayCheckBox.isSelected();
+        settings.soundEnabled = soundCheckBox.isSelected();
+        settings.petsEnabled = petCheckBox.isSelected();
+        settings.fortuneEnabled = fortuneCheckBox.isSelected();
+        settings.slayerEnabled = slayerCheckBox.isSelected();
+        settings.priorityDrops.clear();
+        settings.priorityDrops.addAll(priorityDrops);
     }
 
     public void playSound() {
         Toolkit.getDefaultToolkit().beep();
     }
-
 
     public String getWebhookUrl() {
         return webhookField.getText();

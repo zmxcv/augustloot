@@ -57,6 +57,9 @@ public class NpcDropDiscordPlugin extends Plugin {
     @Override
     protected void startUp() throws Exception {
         panel = new DiscordLootPanel();
+        panel.loadSettings();       // Explicitly load settings from JSON
+        panel.applySettingsToUI();  // Apply loaded settings to checkboxes, webhook, and priority list
+
         setupNavigationButton("/icon.png");
         System.out.println("Discord Loot Notifier started!");
     }
@@ -67,6 +70,7 @@ public class NpcDropDiscordPlugin extends Plugin {
             clientToolbar.removeNavigation(navButton);
             navButton = null;
         }
+        panel.saveSettings();
         System.out.println("Discord Loot Notifier stopped!");
     }
 
@@ -183,7 +187,7 @@ public class NpcDropDiscordPlugin extends Plugin {
 
                 new Thread(() -> {
                     try {
-                        Thread.sleep(5000);
+                        Thread.sleep(3000);
                         tray.remove(icon);
                     } catch (Exception ignored) {
                     }
@@ -253,7 +257,7 @@ public class NpcDropDiscordPlugin extends Plugin {
 
                 new Thread(() -> {
                     try {
-                        Thread.sleep(2000);
+                        Thread.sleep(3000);
                         tray.remove(icon);
                     } catch (Exception ignored) {
                     }
