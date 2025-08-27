@@ -106,11 +106,14 @@ public class NpcDropDiscordPlugin extends Plugin {
             String itemName = client.getItemDefinition(itemStack.getId()).getName();
             int quantity = itemStack.getQuantity();
             boolean isPriority = panel.getPriorityDrops().contains(itemName.toLowerCase());
+
             if (!isPriority && panel.isFortuneEnabled()) {
                 String lower = itemName.toLowerCase();
-                if (lower.contains("box") || lower.contains("cache") || lower.contains("crate") ||
-                        lower.contains("pack") || lower.contains("present")) {
-                    isPriority = true;
+                if (!(panel.isSlayerEnabled() && lower.contains("slayer") && lower.contains("box"))) {
+                    if (lower.contains("box") || lower.contains("cache") || lower.contains("crate") ||
+                            lower.contains("pack") || lower.contains("present")) {
+                        isPriority = true;
+                    }
                 }
             }
 
@@ -180,7 +183,7 @@ public class NpcDropDiscordPlugin extends Plugin {
 
                 new Thread(() -> {
                     try {
-                        Thread.sleep(2000);
+                        Thread.sleep(5000);
                         tray.remove(icon);
                     } catch (Exception ignored) {
                     }

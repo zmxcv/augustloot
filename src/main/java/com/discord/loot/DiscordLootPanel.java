@@ -17,6 +17,7 @@ public class DiscordLootPanel extends PluginPanel {
     private final JCheckBox soundCheckBox;
     private final JCheckBox petCheckBox;
     private final JCheckBox fortuneCheckBox;
+    private final JCheckBox slayerCheckBox;
     private final JButton testButton;
     private final JButton addDropButton;
     private final JButton removeDropButton;
@@ -52,12 +53,15 @@ public class DiscordLootPanel extends PluginPanel {
         petCheckBox.setToolTipText("Enable notifications when a pet drops.");
         fortuneCheckBox = new JCheckBox("Fortune", true);
         fortuneCheckBox.setToolTipText("If your account has Fortune league perk, enable this for notification of any boxes");
+        slayerCheckBox = new JCheckBox("Ignore Slayer Boxes", true);
+        slayerCheckBox.setToolTipText("This will disable Slayer box drop notifications");
         optionsPanel.add(discordCheckBox);
         optionsPanel.add(pmCheckBox);
         optionsPanel.add(trayCheckBox);
         optionsPanel.add(soundCheckBox);
         optionsPanel.add(petCheckBox);
         optionsPanel.add(fortuneCheckBox);
+        optionsPanel.add(slayerCheckBox);
         optionsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 150));
         add(optionsPanel);
         add(Box.createVerticalStrut(10));
@@ -177,6 +181,8 @@ public class DiscordLootPanel extends PluginPanel {
     }
 
     public boolean isPetsEnabled() { return petCheckBox.isSelected(); }
+
+    public boolean isSlayerEnabled() { return slayerCheckBox.isSelected(); }
 
     public List<String> getPriorityDrops() {
         return new ArrayList<>(priorityDrops);
