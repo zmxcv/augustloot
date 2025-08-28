@@ -3,6 +3,7 @@ package com.discord.loot;
 import com.google.inject.Inject;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
+import net.runelite.api.events.ChatMessage;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ClientShutdown;
@@ -34,9 +35,12 @@ import java.util.concurrent.LinkedBlockingQueue;
 )
 public class NpcDropDiscordPlugin extends Plugin {
 
-    @Inject private Client client;
-    @Inject private ClientThread clientThread;
-    @Inject private ClientToolbar clientToolbar;
+    @Inject
+    private Client client;
+    @Inject
+    private ClientThread clientThread;
+    @Inject
+    private ClientToolbar clientToolbar;
 
     private static DiscordLootPanel panel;
     private NavigationButton navButton;
@@ -144,7 +148,7 @@ public class NpcDropDiscordPlugin extends Plugin {
     }
 
     @Subscribe
-    public void onChatMessage(net.runelite.api.events.ChatMessage event) {
+    public void onChatMessage(ChatMessage event) {
         if (event.getType() != ChatMessageType.GAMEMESSAGE) return;
 
         String chatMessage = event.getMessage();

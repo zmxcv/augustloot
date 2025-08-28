@@ -15,8 +15,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-public class DiscordLootPanel extends PluginPanel
-{
+public class DiscordLootPanel extends PluginPanel {
     private final JTextField webhookField;
     private final DefaultListModel<String> priorityListModel;
     private final DefaultListModel<String> lootListModel;
@@ -39,8 +38,7 @@ public class DiscordLootPanel extends PluginPanel
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private DiscordLootSettings settings;
 
-    public DiscordLootPanel()
-    {
+    public DiscordLootPanel() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
@@ -136,30 +134,25 @@ public class DiscordLootPanel extends PluginPanel
         add(lootPanel);
     }
 
-    private void addPriorityDrop()
-    {
+    private void addPriorityDrop() {
         String drop = newDropField.getText().trim();
-        if (!drop.isEmpty() && !settings.priorityDrops.contains(drop.toLowerCase()))
-        {
+        if (!drop.isEmpty() && !settings.priorityDrops.contains(drop.toLowerCase())) {
             settings.priorityDrops.add(drop.toLowerCase());
             priorityListModel.addElement(drop);
             newDropField.setText("");
         }
     }
 
-    private void removeSelectedDrop(JList<String> list)
-    {
+    private void removeSelectedDrop(JList<String> list) {
         int selected = list.getSelectedIndex();
-        if (selected != -1)
-        {
+        if (selected != -1) {
             String drop = priorityListModel.get(selected);
             settings.priorityDrops.remove(drop.toLowerCase());
             priorityListModel.remove(selected);
         }
     }
 
-    public void addLootFeed(String itemName, String npcName)
-    {
+    public void addLootFeed(String itemName, String npcName) {
         String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
         String entry = "[" + time + "] " + itemName + " from " + npcName;
         SwingUtilities.invokeLater(() -> {
@@ -168,8 +161,7 @@ public class DiscordLootPanel extends PluginPanel
         });
     }
 
-    public void addLootFeedForPet(String gameMessage)
-    {
+    public void addLootFeedForPet(String gameMessage) {
         String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
         String entry = "[" + time + "] " + gameMessage;
         SwingUtilities.invokeLater(() -> {
@@ -178,10 +170,8 @@ public class DiscordLootPanel extends PluginPanel
         });
     }
 
-    private void sendTestNotification()
-    {
-        if (discordCheckBox.isSelected())
-        {
+    private void sendTestNotification() {
+        if (discordCheckBox.isSelected()) {
             System.out.println("Discord test notification to: " + webhookField.getText());
             NpcDropDiscordPlugin.sendDiscordNotification("Test Item", "TestNpc", "TestPlayer", 1);
         }
@@ -198,41 +188,29 @@ public class DiscordLootPanel extends PluginPanel
         addLootFeed("TestItem", "TestNPC");
     }
 
-    public void saveSettings()
-    {
+    public void saveSettings() {
         updateSettingsFromUI();
-        try (Writer writer = Files.newBufferedWriter(settingsFile))
-        {
+        try (Writer writer = Files.newBufferedWriter(settingsFile)) {
             gson.toJson(settings, writer);
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void loadSettings()
-    {
-        if (Files.exists(settingsFile))
-        {
-            try (Reader reader = Files.newBufferedReader(settingsFile))
-            {
+    public void loadSettings() {
+        if (Files.exists(settingsFile)) {
+            try (Reader reader = Files.newBufferedReader(settingsFile)) {
                 settings = gson.fromJson(reader, DiscordLootSettings.class);
-            }
-            catch (IOException e)
-            {
+            } catch (IOException e) {
                 e.printStackTrace();
                 settings = new DiscordLootSettings();
             }
-        }
-        else
-        {
+        } else {
             settings = new DiscordLootSettings();
         }
     }
 
-    void applySettingsToUI()
-    {
+    void applySettingsToUI() {
         webhookField.setText(settings.webhookUrl);
         discordCheckBox.setSelected(settings.discordEnabled);
         pmCheckBox.setSelected(settings.pmEnabled);
@@ -243,14 +221,12 @@ public class DiscordLootPanel extends PluginPanel
         slayerCheckBox.setSelected(settings.slayerEnabled);
 
         priorityListModel.clear();
-        for (String drop : settings.priorityDrops)
-        {
+        for (String drop : settings.priorityDrops) {
             priorityListModel.addElement(drop);
         }
     }
 
-    private void updateSettingsFromUI()
-    {
+    private void updateSettingsFromUI() {
         settings.webhookUrl = webhookField.getText();
         settings.discordEnabled = discordCheckBox.isSelected();
         settings.pmEnabled = pmCheckBox.isSelected();
@@ -262,53 +238,43 @@ public class DiscordLootPanel extends PluginPanel
         // settings.priorityDrops already updated by add/remove methods
     }
 
-    public void playSound()
-    {
+    public void playSound() {
         Toolkit.getDefaultToolkit().beep();
     }
 
-    public String getWebhookUrl()
-    {
+    public String getWebhookUrl() {
         return webhookField.getText();
     }
 
-    public boolean isDiscordEnabled()
-    {
+    public boolean isDiscordEnabled() {
         return discordCheckBox.isSelected();
     }
 
-    public boolean isPmEnabled()
-    {
+    public boolean isPmEnabled() {
         return pmCheckBox.isSelected();
     }
 
-    public boolean isTrayEnabled()
-    {
+    public boolean isTrayEnabled() {
         return trayCheckBox.isSelected();
     }
 
-    public boolean isSoundEnabled()
-    {
+    public boolean isSoundEnabled() {
         return soundCheckBox.isSelected();
     }
 
-    public boolean isFortuneEnabled()
-    {
+    public boolean isFortuneEnabled() {
         return fortuneCheckBox.isSelected();
     }
 
-    public boolean isPetsEnabled()
-    {
+    public boolean isPetsEnabled() {
         return petCheckBox.isSelected();
     }
 
-    public boolean isSlayerEnabled()
-    {
+    public boolean isSlayerEnabled() {
         return slayerCheckBox.isSelected();
     }
 
-    public List<String> getPriorityDrops()
-    {
+    public List<String> getPriorityDrops() {
         return List.copyOf(settings.priorityDrops);
     }
 }
