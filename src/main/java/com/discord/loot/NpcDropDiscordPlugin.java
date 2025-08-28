@@ -24,6 +24,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
 @PluginDescriptor(
@@ -43,6 +45,9 @@ public class NpcDropDiscordPlugin extends Plugin {
 
     private static final BlockingQueue<String> notifQueue = new LinkedBlockingQueue<>();
     private static volatile boolean workerRunning = false;
+
+    private final ExecutorService discordExecutor = Executors.newSingleThreadExecutor();
+
 
     private static final Set<String> PET_MESSAGES = Set.of(
             "You have a funny feeling like you're being followed",
@@ -118,12 +123,22 @@ public class NpcDropDiscordPlugin extends Plugin {
 
             if (isPriority) {
                 clientThread.invokeLater(() -> {
-                    if (panel.isDiscordEnabled()) sendDiscordNotification(itemName, npcName, playerName, quantity);
-                    if (panel.isPmEnabled()) sendPrivateMessage(itemName, quantity);
-                    if (panel.isTrayEnabled()) showTrayNotification(itemName, quantity);
-                    if (panel.isSoundEnabled()) panel.playSound();
+                    if (panel.isPmEnabled()) {
+                        sendPrivateMessage(itemName, quantity);
+                    }
+                    if (panel.isTrayEnabled()) {
+                        showTrayNotification(itemName, quantity);
+                    }
+                    if (panel.isSoundEnabled()) {
+                        panel.playSound();
+                    }
                     panel.addLootFeed(itemName, npcName);
                 });
+                if (panel.isDiscordEnabled()) {
+                    discordExecutor.submit(() ->
+                            sendDiscordNotification(itemName, npcName, playerName, quantity)
+                    );
+                }
             }
         });
     }
